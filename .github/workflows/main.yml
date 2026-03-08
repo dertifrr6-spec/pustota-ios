@@ -22,15 +22,19 @@ jobs:
 
       - name: Build IPA
         run: |
-          # Используем только базовую команду, которая у тебя работала
+          # Базовая команда без лишних аргументов
           flet build ipa
+          
+          # ЯДЕРНЫЙ ПОИСК: Выводим список всех файлов, чтобы найти результат
+          echo "--- СПИСОК ВСЕХ СОЗДАННЫХ ФАЙЛОВ ---"
+          find . -name "*.ipa" -o -name "*.app"
 
-      - name: Upload Artifact
+      - name: Upload Everything Found
         uses: actions/upload-artifact@v4
         with:
-          name: Pustota-App
-          # Ищем ВСЁ, что скомпилировалось (ipa или app) по всему проекту
+          name: Pustota-Debug-Build
+          # Пытаемся забрать вообще всю папку build, если она есть
           path: |
-            **/build/ios/ipa/*.ipa
-            **/build/ios/iphoneos/*.app
+            build/ios/ipa/*.ipa
+            build/ios/iphoneos/*.app
           if-no-files-found: warn
