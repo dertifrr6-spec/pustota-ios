@@ -5,25 +5,28 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      
-      - name: Set up Python
-        uses: actions/setup-python@v5
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
         with:
-          python-version: '3.11'
-          
-      - name: Install Flet CLI
+          channel: 'stable'
+          architecture: x64
+
+      - name: Install Flet and Deps
         run: |
-          pip install flet
-          
-      - name: Install Dependencies from requirements
+          python3 -m pip install flet flet-audio-recorder
+
+      - name: Pre-build Setup
         run: |
+          # Установка необходимых инструментов для сборки
+          flutter precache --ios
           pip install -r requirements.txt
-          
-      - name: Build IPA File
+
+      - name: Build IPA
         run: |
-          # Команда для создания IPA без подписи (для TrollStore)
+          # Принудительная сборка без подписи
           flet build ipa --no-codesign
-          
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
