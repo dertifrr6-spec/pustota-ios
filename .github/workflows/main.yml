@@ -15,17 +15,32 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Setup & Verify
+      - name: Setup & Sterilize Project
         run: |
+          # Устанавливаем Flet
           python3 -m pip install flet flet-audio-recorder flet-cli==0.82.0 --break-system-packages
-          echo "--- ПРОВЕРКА ФАЙЛОВ В КОРНЕ ---"
+          
+          echo "--- НАЧИНАЕМ ГЛУБОКУЮ ЗАЧИСТКУ ---"
+          # Удаляем скрытые файлы MacOS, которые плодят ошибки
+          find . -name ".DS_Store" -delete
+          # Удаляем кэши питона
+          find . -name "__pycache__" -delete
+          find . -name "*.pyc" -delete
+          # Удаляем ВООБЩЕ все картинки и иконки, если они где-то запрятались
+          find . -name "*.png" -delete
+          find . -name "*.jpg" -delete
+          find . -name "*.jpeg" -delete
+          find . -name "*.ico" -delete
+          # Удаляем старые папки сборки
+          rm -rf build
+          rm -rf dist
+          
+          echo "Остались только файлы:"
           ls -R
-          # Если файл лежит в подпапке, мы его найдем
 
       - name: Build IPA
         run: |
-          # Собираем, указывая, что проект находится в текущей директории (.)
-          # и входная точка - main.py
+          # Собираем, явно указывая на текущую папку и главный файл
           flet build ipa . --module-name main --verbose
           
       - name: Upload Artifact
