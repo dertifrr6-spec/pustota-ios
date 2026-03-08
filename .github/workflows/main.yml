@@ -15,21 +15,35 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Setup
+      - name: Setup & Nuclear Clean
         run: |
+          # Устанавливаем кли
           python3 -m pip install flet flet-audio-recorder flet-cli==0.82.0 --break-system-packages
+          
+          # УДАЛЯЕМ ВСЁ, ЧТО МОЖЕТ ВЫЗВАТЬ 0x89
+          # Чистим кэши питона, скрытые файлы мака и временные папки
+          find . -name "*.pyc" -delete
+          find . -name "__pycache__" -delete
+          find . -name ".DS_Store" -delete
+          find . -name "*.png" -delete
+          find . -name "*.jpg" -delete
+          find . -name "*.ico" -delete
+          
+          # На всякий случай проверяем, нет ли лишних бинарников в корне
+          rm -rf build/
+          rm -rf dist/
 
       - name: Build IPA
         run: |
-          # Используем только базовую команду без флагов, которые вызывают ошибки
-          flet build ipa
-
+          # Запускаем сборку, ПРЯМО УКАЗЫВАЯ путь к main.py
+          # Это заставит Flet смотреть только на код
+          flet build ipa main.py --verbose
+          
       - name: Upload Artifact
+        if: always()
         uses: actions/upload-artifact@v4
         with:
-          name: Pustota-App-Package
-          # Ищем приложение везде, где оно может появиться после сборки
+          name: Pustota-App
           path: |
             build/ios/iphoneos/*.app
             build/ios/ipa/*.ipa
-          if-no-files-found: warn
