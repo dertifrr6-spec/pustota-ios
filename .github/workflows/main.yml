@@ -19,26 +19,27 @@ jobs:
         run: |
           find . -name ".DS_Store" -delete
           python3 -m pip install flet flet-audio-recorder flet-cli==0.82.0 --break-system-packages
-          [ -f requirements.txt ] && pip install -r requirements.txt --break-system-packages || echo "No reqs"
+          [ -f requirements.txt ] && pip install -r requirements.txt --break-system-packages || echo "No requirements"
 
       - name: Build IPA
         run: |
-          # Собираем без подписи, чтобы не было ошибок сертификатов
-          flet build ipa --no-codesign --verbose || echo "Build ended"
+          # Собираем без подписи, чтобы не зависеть от Apple ID
+          flet build ipa --no-codesign --verbose || echo "Build finished"
 
       - name: Collect Results
         run: |
           mkdir -p final_output
-          # Ищем .app и .xcarchive и копируем их в нашу папку
-          find . -name "*.app" -type d -exec cp -R {} final_output/ \;
-          find . -name "*.xcarchive" -type d -exec cp -R {} final_output/ \;
-          # На случай, если каким-то чудом создался .ipa
-          find . -name "*.ipa" -exec cp {} final_output/ \;
+          echo "Deep searching for build results..."
+          # Ищем приложение (.app) или архив проекта (.xcarchive)
+          find . -name "*.app" -type d -not -path "./final_output/*" -exec cp -R {} final_output/ \;
+          find . -name "*.xcarchive" -type d -not -path "./final_output/*" -exec cp -R {} final_output/ \;
           
-      - name: Upload
+          # Если нашли .app, упакуем его в zip прямо здесь для надежности
+          cd final_output && zip -r app_payload.zip . || echo "Nothing to zip"
+          
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Pustota-Final-Build
+          name: Pustota-App-Payload
           path: final_output/
-          # Если папка будет пустой, билд упадет, и мы поймем, что что-то не так
           if-no-files-found: error
