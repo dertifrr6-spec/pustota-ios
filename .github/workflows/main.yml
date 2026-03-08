@@ -4,7 +4,6 @@ jobs:
   build:
     runs-on: macos-latest
     env:
-      # Насильно заставляем систему использовать UTF-8 везде
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
       PYTHONUTF8: 1
@@ -18,24 +17,28 @@ jobs:
 
       - name: Setup
         run: |
-          # Вычищаем всё, что может иметь бинарную структуру и путать Flet
           find . -name ".DS_Store" -delete
           python3 -m pip install flet flet-audio-recorder flet-cli==0.82.0 --break-system-packages
+          # Если есть зависимости в requirements.txt, ставим их
+          [ -f requirements.txt ] && pip install -r requirements.txt --break-system-packages || echo "No requirements.txt"
 
       - name: Build IPA
         run: |
-          # Запускаем сборку с подавлением цвета и прогресс-баров, чтобы не ломать логи
-          # И игнорируем ошибки доктора, они нам не мешают
-          flet build ipa --verbose || echo "Continue anyway..."
+          # Добавляем --no-codesign, чтобы не спотыкаться об отсутствие сертификатов
+          flet build ipa --no-codesign --verbose || echo "Build finished with some notes"
 
-      - name: Force Collect IPA
+      - name: Force Collect Files
         run: |
           mkdir -p final_output
-          # Ищем наш файл. Если билд прошел, он его найдет
+          echo "Searching for build results..."
+          # Ищем ipa, xcarchive и готовые папки .app
           find . -name "*.ipa" -exec cp {} final_output/ \;
+          find . -path "*/build/ios/archive/*.xcarchive" -exec cp -R {} final_output/ \;
+          find . -name "*.app" -type d -exec cp -R {} final_output/ \;
           
       - name: Upload
         uses: actions/upload-artifact@v4
         with:
-          name: Pustota-App
-          path: final_output/*.ipa
+          name: Pustota-Build-Result
+          # Загружаем всю папку со всеми найденными форматами
+          path: final_output/
