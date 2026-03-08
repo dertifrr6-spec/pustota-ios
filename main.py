@@ -45,4 +45,5 @@ def main(page: ft.Page):
         ], alignment="center", horizontal_alignment="center")
     )
 
-ft.app(main)
+
+ft.app(main) 
