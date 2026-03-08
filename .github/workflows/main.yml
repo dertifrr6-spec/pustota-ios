@@ -11,24 +11,24 @@ jobs:
           
       - name: Setup Dependencies
         run: |
-          # Флаг --break-system-packages заставит Python установить библиотеки силой
-          python3 -m pip install flet flet-audio-recorder --break-system-packages
+          # Устанавливаем всё силой, включая cli, чтобы flet build не пытался делать это сам
+          python3 -m pip install flet flet-audio-recorder flet-cli==0.82.0 --break-system-packages
           if [ -f requirements.txt ]; then
             python3 -m pip install -r requirements.txt --break-system-packages
           fi
           
       - name: Build IPA
         run: |
+          # Собираем. Теперь flet-cli уже стоит, и он не должен ругаться
           flet build ipa --no-codesign
           
       - name: Force Collect IPA
         run: |
           mkdir -p final_output
-          # Ищем файл и копируем его в надежное место
           find . -name "*.ipa" -exec cp {} final_output/ \;
           
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Pustota-App
-          path: final_output/*.ipa
+          path: final_output/*.ipa 
