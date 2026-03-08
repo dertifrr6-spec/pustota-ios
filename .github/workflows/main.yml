@@ -11,18 +11,19 @@ jobs:
       - name: Setup
         run: |
           python3 -m pip install flet flet-audio-recorder
-          [ -f requirements.txt ] && pip install -r requirements.txt || echo "Skip requirements"
+          [ -f requirements.txt ] && pip install -r requirements.txt || echo "No requirements"
       - name: Build
         run: |
-          # Собираем проект
+          # Собираем приложение
           flet build ipa --no-codesign
-      - name: Force Find IPA
+      - name: Force Collect IPA
         run: |
-          # Эта магия найдет файл, даже если он спрятан в недрах системы
-          mkdir -p output_ipa
-          find . -name "*.ipa" -exec cp {} output_ipa/ \;
-      - name: Upload Artifact
+          # Создаем папку и ПРИНУДИТЕЛЬНО копируем туда найденный файл
+          mkdir -p final_output
+          find . -name "*.ipa" -exec cp {} final_output/ \;
+          ls -R final_output
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: Pustota-App
-          path: output_ipa/*.ipa
+          path: final_output/*.ipa
