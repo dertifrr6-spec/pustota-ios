@@ -21,14 +21,14 @@ jobs:
 
       - name: Build IPA
         run: |
-          # Собираем проект. Раз папки assets нет, ошибок не будет.
-          flet build ipa --no-codesign
+          # Используем только базовую команду без флагов, которые вызывают ошибки
+          flet build ipa
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Pustota-Final-App
-          # Указываем стандартные пути, где Flutter и Flet оставляют билды
+          name: Pustota-App-Package
+          # Ищем приложение везде, где оно может появиться после сборки
           path: |
             build/ios/iphoneos/*.app
             build/ios/ipa/*.ipa
