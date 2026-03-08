@@ -15,29 +15,18 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Setup & Nuclear Clean
+      - name: Setup & Verify
         run: |
-          # Устанавливаем кли
           python3 -m pip install flet flet-audio-recorder flet-cli==0.82.0 --break-system-packages
-          
-          # УДАЛЯЕМ ВСЁ, ЧТО МОЖЕТ ВЫЗВАТЬ 0x89
-          # Чистим кэши питона, скрытые файлы мака и временные папки
-          find . -name "*.pyc" -delete
-          find . -name "__pycache__" -delete
-          find . -name ".DS_Store" -delete
-          find . -name "*.png" -delete
-          find . -name "*.jpg" -delete
-          find . -name "*.ico" -delete
-          
-          # На всякий случай проверяем, нет ли лишних бинарников в корне
-          rm -rf build/
-          rm -rf dist/
+          echo "--- ПРОВЕРКА ФАЙЛОВ В КОРНЕ ---"
+          ls -R
+          # Если файл лежит в подпапке, мы его найдем
 
       - name: Build IPA
         run: |
-          # Запускаем сборку, ПРЯМО УКАЗЫВАЯ путь к main.py
-          # Это заставит Flet смотреть только на код
-          flet build ipa main.py --verbose
+          # Собираем, указывая, что проект находится в текущей директории (.)
+          # и входная точка - main.py
+          flet build ipa . --module-name main --verbose
           
       - name: Upload Artifact
         if: always()
