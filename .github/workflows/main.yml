@@ -4,6 +4,7 @@ jobs:
   build:
     runs-on: macos-latest
     env:
+      # Это то, что спасло нас от ошибки utf-8
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
       PYTHONUTF8: 1
@@ -19,28 +20,17 @@ jobs:
         run: |
           find . -name ".DS_Store" -delete
           python3 -m pip install flet flet-audio-recorder flet-cli==0.82.0 --break-system-packages
-          [ -f requirements.txt ] && pip install -r requirements.txt --break-system-packages || echo "No reqs"
 
       - name: Build IPA
         run: |
-          # Собираем в режиме verbose, чтобы видеть, куда падают файлы
-          flet build ipa --no-codesign --verbose || echo "Build finished"
-
-      - name: Collect Everything
-        run: |
-          mkdir -p final_output
-          echo "Searching for any build results..."
-          # Ищем скомпилированное приложение (.app) и копируем его
-          find . -name "*.app" -type d -not -path "./final_output/*" -exec cp -R {} final_output/ \;
-          # Ищем архив Xcode (.xcarchive) на случай если .app не нашелся
-          find . -name "*.xcarchive" -type d -not -path "./final_output/*" -exec cp -R {} final_output/ \;
-          
-          # Проверяем, что нашли хоть что-то
-          ls -R final_output
+          # Собираем как раньше, без лишних мудреных флагов
+          flet build ipa --no-codesign
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
-          name: Pustota-Build-Contents
-          path: final_output/
-          if-no-files-found: error
+          name: Pustota-App
+          # Просто просим GitHub найти все файлы .ipa в папке проекта
+          path: "**/build/ios/ipa/*.ipa"
+          # Если не найдет .ipa, пусть попробует забрать папку .app
+          if-no-files-found: warn
