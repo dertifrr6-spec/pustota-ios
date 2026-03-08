@@ -6,28 +6,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Install Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          architecture: x64
 
-      - name: Install Flet and Deps
+      - name: Install Flet and Dependencies
         run: |
-          python3 -m pip install flet flet-audio-recorder
-
-      - name: Pre-build Setup
-        run: |
-          # Установка необходимых инструментов для сборки
-          flutter precache --ios
+          pip install flet flet-audio-recorder
           pip install -r requirements.txt
 
-      - name: Build IPA
+      - name: Prepare Flet Project
         run: |
-          # Принудительная сборка без подписи
-          flet build ipa --no-codesign
+          # Создаем структуру проекта, которую ожидает сборщик
+          flet build ipa --no-codesign --verbose
 
-      - name: Upload Artifact
+      - name: Upload IPA
         uses: actions/upload-artifact@v4
         with:
           name: Pustota-App
