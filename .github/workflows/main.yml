@@ -1,0 +1,22 @@
+name: Build IPA
+on: [push]
+jobs:
+  build:
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+      - name: Install Dependencies
+        run: |
+          pip3 install flet flet-audio-recorder
+      - name: Build IPA File
+        run: |
+          # Собираем файл для TrollStore
+          flet build ipa --no-codesign
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: Pustota-App
+          path: build/ipa/*.ipa
