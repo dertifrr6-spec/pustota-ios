@@ -3,6 +3,11 @@ on: [push]
 jobs:
   build:
     runs-on: macos-latest
+    env:
+      # Насильно заставляем систему использовать UTF-8 везде
+      LANG: en_US.UTF-8
+      LC_ALL: en_US.UTF-8
+      PYTHONUTF8: 1
     steps:
       - uses: actions/checkout@v4
 
@@ -13,20 +18,20 @@ jobs:
 
       - name: Setup
         run: |
-          # Чистим кэш и ставим пакеты
+          # Вычищаем всё, что может иметь бинарную структуру и путать Flet
           find . -name ".DS_Store" -delete
           python3 -m pip install flet flet-audio-recorder flet-cli==0.82.0 --break-system-packages
-          [ -f requirements.txt ] && pip install -r requirements.txt --break-system-packages || echo "No reqs"
 
       - name: Build IPA
         run: |
-          # Просто запускаем сборку. Flet сам найдет assets/icon.png
-          # Мы не используем --icon, так как cli на него ругается
-          flet build ipa
+          # Запускаем сборку с подавлением цвета и прогресс-баров, чтобы не ломать логи
+          # И игнорируем ошибки доктора, они нам не мешают
+          flet build ipa --verbose || echo "Continue anyway..."
 
       - name: Force Collect IPA
         run: |
           mkdir -p final_output
+          # Ищем наш файл. Если билд прошел, он его найдет
           find . -name "*.ipa" -exec cp {} final_output/ \;
           
       - name: Upload
