@@ -8,21 +8,26 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Setup
+          
+      - name: Setup Dependencies
         run: |
-          python3 -m pip install flet flet-audio-recorder
-          [ -f requirements.txt ] && pip install -r requirements.txt || echo "No requirements"
-      - name: Build
+          # Флаг --break-system-packages заставит Python установить библиотеки силой
+          python3 -m pip install flet flet-audio-recorder --break-system-packages
+          if [ -f requirements.txt ]; then
+            python3 -m pip install -r requirements.txt --break-system-packages
+          fi
+          
+      - name: Build IPA
         run: |
-          # Собираем приложение
           flet build ipa --no-codesign
+          
       - name: Force Collect IPA
         run: |
-          # Создаем папку и ПРИНУДИТЕЛЬНО копируем туда найденный файл
           mkdir -p final_output
+          # Ищем файл и копируем его в надежное место
           find . -name "*.ipa" -exec cp {} final_output/ \;
-          ls -R final_output
-      - name: Upload
+          
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Pustota-App
