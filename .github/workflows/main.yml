@@ -11,17 +11,18 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Setup & Clean
+      - name: Setup
         run: |
-          # Удаляем скрытые файлы мака, которые ломают кодировку
+          # Чистим кэш и ставим пакеты
           find . -name ".DS_Store" -delete
           python3 -m pip install flet flet-audio-recorder flet-cli==0.82.0 --break-system-packages
           [ -f requirements.txt ] && pip install -r requirements.txt --break-system-packages || echo "No reqs"
 
       - name: Build IPA
         run: |
-          # Указываем путь к иконке явно, чтобы flet не пытался "читать" все файлы подряд
-          flet build ipa --icon assets/icon.png
+          # Просто запускаем сборку. Flet сам найдет assets/icon.png
+          # Мы не используем --icon, так как cli на него ругается
+          flet build ipa
 
       - name: Force Collect IPA
         run: |
