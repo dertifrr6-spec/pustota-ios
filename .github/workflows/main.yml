@@ -5,24 +5,26 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Install Tools
+
+      - name: Install Dependencies
         run: |
+          python3 -m pip install --upgrade pip
           python3 -m pip install flet flet-audio-recorder
-          pip install -r requirements.txt
-      - name: Build Application
+          # Если файла requirements нет, пропустим этот шаг
+          [ -f requirements.txt ] && pip install -r requirements.txt || echo "No requirements file"
+
+      - name: Build IPA
         run: |
-          # Собираем приложение
-          flet build ipa --no-codesign
-      - name: Find and Show IPA
-        run: |
-          # Эта команда найдет файл и покажет нам, где он спрятан
-          find build -name "*.ipa"
-      - name: Upload Result
+          # Собираем без проверки подписи и с подробным логом
+          flet build ipa --no-codesign --verbose
+
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: Pustota-App
-          # Ищем файл во всех подпапках папки build
           path: build/**/*.ipa
