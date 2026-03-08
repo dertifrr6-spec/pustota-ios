@@ -11,27 +11,24 @@ jobs:
         with:
           channel: 'stable'
 
-      - name: Clean Environment & Install Flet
+      - name: Setup & Clean
         run: |
-          # Удаляем мусорные файлы macOS, которые могут ломать кодировку
+          # Удаляем скрытые файлы мака, которые ломают кодировку
           find . -name ".DS_Store" -delete
           python3 -m pip install flet flet-audio-recorder flet-cli==0.82.0 --break-system-packages
-          if [ -f requirements.txt ]; then
-            python3 -m pip install -r requirements.txt --break-system-packages
-          fi
+          [ -f requirements.txt ] && pip install -r requirements.txt --break-system-packages || echo "No reqs"
 
       - name: Build IPA
         run: |
-          # Собираем. Если есть картинки, Flet должен их просто копировать, а не читать
-          flet build ipa --verbose
+          # Указываем путь к иконке явно, чтобы flet не пытался "читать" все файлы подряд
+          flet build ipa --icon assets/icon.png
 
       - name: Force Collect IPA
         run: |
           mkdir -p final_output
           find . -name "*.ipa" -exec cp {} final_output/ \;
-          ls -R final_output
-
-      - name: Upload Artifact
+          
+      - name: Upload
         uses: actions/upload-artifact@v4
         with:
           name: Pustota-App
