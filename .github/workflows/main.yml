@@ -13,12 +13,13 @@ jobs:
           python3 -m pip install flet flet-audio-recorder
           pip install -r requirements.txt
           flet build ipa --no-codesign
-      - name: Locate IPA
+      - name: Debug - List Files
         run: |
-          # Эта команда выведет точный путь к файлу в логи, если он создался
-          find build -name "*.ipa"
-      - name: Upload IPA
+          # Это покажет нам, где на самом деле лежит твой файл
+          find . -name "*.ipa"
+      - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Pustota-App
-          path: build/**/*.ipa
+          # Ищем файл в любой папке проекта
+          path: "**/*.ipa"
