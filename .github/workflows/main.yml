@@ -8,18 +8,21 @@ jobs:
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Setup & Build
+      - name: Install Tools
         run: |
           python3 -m pip install flet flet-audio-recorder
           pip install -r requirements.txt
-          flet build ipa --no-codesign
-      - name: Debug - List Files
+      - name: Build Application
         run: |
-          # Это покажет нам, где на самом деле лежит твой файл
-          find . -name "*.ipa"
-      - name: Upload Artifact
+          # Собираем приложение
+          flet build ipa --no-codesign
+      - name: Find and Show IPA
+        run: |
+          # Эта команда найдет файл и покажет нам, где он спрятан
+          find build -name "*.ipa"
+      - name: Upload Result
         uses: actions/upload-artifact@v4
         with:
           name: Pustota-App
-          # Ищем файл в любой папке проекта
-          path: "**/*.ipa"
+          # Ищем файл во всех подпапках папки build
+          path: build/**/*.ipa
