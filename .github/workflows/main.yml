@@ -5,30 +5,34 @@ jobs:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: subosito/flutter-action@v2
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-          
-      - name: Setup Dependencies
+
+      - name: Fix Python & Install Flet
         run: |
-          # Устанавливаем всё силой, включая cli, чтобы flet build не пытался делать это сам
+          # Обходим защиту системы и ставим flet вместе с cli одной командой
           python3 -m pip install flet flet-audio-recorder flet-cli==0.82.0 --break-system-packages
           if [ -f requirements.txt ]; then
             python3 -m pip install -r requirements.txt --break-system-packages
           fi
-          
+
       - name: Build IPA
         run: |
-          # Собираем. Теперь flet-cli уже стоит, и он не должен ругаться
-          flet build ipa --no-codesign
-          
+          # В версии 0.82.0 флаг --no-codesign убрали, теперь сборка без подписи идет так:
+          flet build ipa
+
       - name: Force Collect IPA
         run: |
+          # Находим файл и переносим его в корень, чтобы GitHub не тупил с путями
           mkdir -p final_output
           find . -name "*.ipa" -exec cp {} final_output/ \;
-          
+          ls -R final_output
+
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Pustota-App
-          path: final_output/*.ipa 
+          path: final_output/*.ipa
