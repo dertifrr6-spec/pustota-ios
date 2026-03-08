@@ -4,7 +4,6 @@ jobs:
   build:
     runs-on: macos-latest
     env:
-      # Это то, что спасло нас от ошибки utf-8
       LANG: en_US.UTF-8
       LC_ALL: en_US.UTF-8
       PYTHONUTF8: 1
@@ -23,14 +22,15 @@ jobs:
 
       - name: Build IPA
         run: |
-          # Собираем как раньше, без лишних мудреных флагов
-          flet build ipa --no-codesign
+          # Используем только базовую команду, которая у тебя работала
+          flet build ipa
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: Pustota-App
-          # Просто просим GitHub найти все файлы .ipa в папке проекта
-          path: "**/build/ios/ipa/*.ipa"
-          # Если не найдет .ipa, пусть попробует забрать папку .app
+          # Ищем ВСЁ, что скомпилировалось (ipa или app) по всему проекту
+          path: |
+            **/build/ios/ipa/*.ipa
+            **/build/ios/iphoneos/*.app
           if-no-files-found: warn
